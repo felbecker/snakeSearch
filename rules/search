@@ -1,0 +1,32 @@
+# type: ignore
+rule search:
+    input:
+        "outputs/"+config["name"]+"/{tool}/hmm/{sample}"
+    output:
+        "outputs/"+config["name"]+"/{tool}/search_out/{sample}"
+    threads: config["search_threads"] if "search_threads" in config else 8
+    resources:
+        mem_mb = config["search_mem"] if "search_mem" in config else 64000,
+        gpu = lambda _: 1 if config["search_use_gpu"] else 0,
+        runtime = config["search_runtime"] if "search_runtime" in config else "1h"
+    log:
+        stdout="outputs/"+config["name"]+"/{tool}/logs/{sample}.log",
+        stderr="outputs/"+config["name"]+"/{tool}/logs/{sample}.err",
+    benchmark:
+        "outputs/"+config["name"]+"/{tool}/benchmarks/{sample}.txt"
+    params:
+        workdir="outputs/"+config["name"]+"/{tool}/workdirs/{sample}/",
+    run:
+        tool_command = config["tools"][wildcards.tool]["search"]["command"]
+        argstring = parse_cmd_args(config["tools"][wildcards.tool]["search"]["params"])
+        pipe_output = config["tools"][wildcards.tool]["search"].get("pipe_output", False)
+
+        cmd = (tool_command + " " + argstring).format(
+            hmm=input,
+            db=config["search_db"],
+            output=output,
+            threads=threads,
+            workdir=params.workdir,
+        )
+
+        run_tool(cmd, output[0], log.stdout, log.stderr, pipe_output)

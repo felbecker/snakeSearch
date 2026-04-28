@@ -1,0 +1,31 @@
+# type: ignore
+rule build_hmm:
+    input:
+        config["data_path"]+"/{sample}"
+    output:
+        "outputs/"+config["name"]+"/{tool}/hmm/{sample}"
+    threads: config["build_hmm_threads"] if "build_hmm_threads" in config else 8
+    resources:
+        mem_mb = config["build_hmm_mem"] if "build_hmm_mem" in config else 64000,
+        gpu = lambda _: 1 if config["build_hmm_use_gpu"] else 0,
+        runtime = config["build_hmm_runtime"] if "build_hmm_runtime" in config else "1h"
+    log:
+        stdout="outputs/"+config["name"]+"/{tool}/logs/{sample}.log",
+        stderr="outputs/"+config["name"]+"/{tool}/logs/{sample}.err",
+    benchmark:
+        "outputs/"+config["name"]+"/{tool}/benchmarks/{sample}.txt"
+    params:
+        workdir="outputs/"+config["name"]+"/{tool}/workdirs/{sample}/",
+    run:
+        tool_command = config["tools"][wildcards.tool]["build_hmm"]["command"]
+        argstring = parse_cmd_args(config["tools"][wildcards.tool]["build_hmm"]["params"])
+        pipe_output = config["tools"][wildcards.tool]["build_hmm"].get("pipe_output", False)
+
+        cmd = (tool_command + " " + argstring).format(
+            msa=input,
+            hmm=output,
+            threads=threads,
+            workdir=params.workdir,
+        )
+
+        run_tool(cmd, output[0], log.stdout, log.stderr, pipe_output)

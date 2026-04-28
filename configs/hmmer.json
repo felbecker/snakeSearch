@@ -1,0 +1,33 @@
+{
+    "name": "default",
+    "tools": {
+      "hmmer" : {
+        "build_hmm": {
+          "command": "conda run --live-stream -n hmmer hmmbuild",
+          "params": [
+            "{hmm}",
+            "{msa}"
+          ]
+        },
+        "search": {
+          "command": "conda run --live-stream -n hmmer hmmsearch",
+          "params": [
+            "-E 200",
+            "--tblout {output}",
+            "{hmm}",
+            "{db}"
+          ]
+        }
+      }
+    },
+    "data_path": "data/example/msa",
+    "search_db": "data/example/db.fasta",
+    "build_hmm_use_gpu": 0,
+    "build_hmm_threads": 1,
+    "build_hmm_mem": 1000,
+    "build_hmm_runtime": "5m",
+    "search_use_gpu": 0,
+    "search_threads": 32,
+    "search_mem": 1000,
+    "search_runtime": "10m"
+}
