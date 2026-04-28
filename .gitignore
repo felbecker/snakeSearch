@@ -1,0 +1,23 @@
+__pycache__/
+build/
+dist/
+.ipynb_checkpoints
+.vscode/
+.snakemake/
+
+tmp/
+outputs*/
+# Ignore everything under data/
+data/*
+# Allow directory traversal into these subfolders
+!data/example/
+!data/profmark/
+# Ignore everything else inside these subfolders
+data/profmark/*
+# Allow only the specific files
+!data/profmark/make.sh
+!data/profmark/split_tbl_msa.py
+configs/*
+!configs/hmmer.json
+profiles/
+slurm/
